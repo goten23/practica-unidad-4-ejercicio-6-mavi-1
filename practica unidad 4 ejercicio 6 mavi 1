@@ -1,0 +1,71 @@
+import pygame
+import sys
+import random
+
+# Inicializar pygame
+pygame.init()
+
+# Configuración de la ventana
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Clickale")
+
+# Clase para representar el enemigo
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load("et.png").convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (random.randint(0, screen_width - self.rect.width), random.randint(0, screen_height - self.rect.height))
+
+# Clase para representar la mira
+class Crosshair(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load("crosshair.png").convert_alpha()
+        self.rect = self.image.get_rect()
+
+# Crear grupos de sprites
+enemies_group = pygame.sprite.Group()
+all_sprites_group = pygame.sprite.Group()
+
+# Crear el objeto mira
+crosshair = Crosshair()
+all_sprites_group.add(crosshair)
+
+# Contador de enemigos derrotados
+enemies_defeated = 0
+
+# Bucle principal
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:  # Click izquierdo
+                # Comprobar si la mira colisiona con algún enemigo
+                enemies_hit_list = pygame.sprite.spritecollide(crosshair, enemies_group, True)
+                if len(enemies_hit_list) > 0:
+                    enemies_defeated += 1
+                    print("Enemigo derrotado:", enemies_defeated)
+                    if enemies_defeated >= 5:
+                        print("¡Has ganado!")
+                        pygame.quit()
+                        sys.exit()
+            elif event.button == 3:  # Click derecho
+                # Crear un nuevo enemigo y agregarlo al grupo de enemigos
+                new_enemy = Enemy()
+                enemies_group.add(new_enemy)
+                all_sprites_group.add(new_enemy)
+
+    # Actualizar la posición de la mira según la posición del mouse
+    crosshair.rect.center = pygame.mouse.get_pos()
+
+    # Dibujar todos los sprites en pantalla
+    screen.fill((0, 0, 0))  # Llenar la pantalla de negro
+    all_sprites_group.draw(screen)
+
+    # Actualizar la pantalla
+    pygame.display.flip()
